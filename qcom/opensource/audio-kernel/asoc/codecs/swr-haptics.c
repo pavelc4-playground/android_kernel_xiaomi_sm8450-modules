@@ -385,12 +385,12 @@ static const struct snd_kcontrol_new haptics_snd_controls[] = {
 };
 
 static const struct snd_soc_dapm_widget haptics_comp_dapm_widgets[] = {
-	SND_SOC_DAPM_AIF_IN("HAP_IN", "HAPTICS_AIF Playback", 0, SND_SOC_NOPM,
-			    0, 0),
-	SND_SOC_DAPM_MIXER_E(
-		"SWR DAC_Port", SND_SOC_NOPM, 0, 0, hap_swr_dac_port,
-		ARRAY_SIZE(hap_swr_dac_port), hap_enable_swr_dac_port,
-		SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU |
+	SND_SOC_DAPM_AIF_IN("HAP_IN", "HAPTICS_AIF Playback", 0,
+				SND_SOC_NOPM, 0, 0),
+	SND_SOC_DAPM_MIXER_E("SWR DAC_Port", SND_SOC_NOPM, 0, 0,
+			hap_swr_dac_port, ARRAY_SIZE(hap_swr_dac_port),
+			hap_enable_swr_dac_port,
+			SND_SOC_DAPM_PRE_PMU | SND_SOC_DAPM_POST_PMU |
 			SND_SOC_DAPM_PRE_PMD | SND_SOC_DAPM_POST_PMD),
 	SND_SOC_DAPM_SPK("HAP_OUT", NULL),
 };

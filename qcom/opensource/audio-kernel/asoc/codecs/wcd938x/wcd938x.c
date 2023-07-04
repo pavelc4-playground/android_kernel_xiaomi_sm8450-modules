@@ -22,9 +22,6 @@
 #include <asoc/msm-cdc-supply.h>
 #include <bindings/audio-codec-port-types.h>
 #include <linux/qti-regmap-debugfs.h>
-#ifdef CONFIG_MMHARDWARE_DETECTION
-#include <linux/mmhardware_sysfs.h>
-#endif
 
 #include "wcd938x-registers.h"
 #include "wcd938x.h"
@@ -302,8 +299,8 @@ static int wcd938x_init_reg(struct snd_soc_component *component)
 				WCD938X_HPH_SURGE_HPHLR_SURGE_EN, 0xC0, 0xC0);
 
 #ifdef CONFIG_TARGET_PRODUCT_INGRES
-	snd_soc_component_update_bits(component, WCD938X_MICB2_TEST_CTL_3, 0x80,
-				      0x80);
+	snd_soc_component_update_bits(component,
+				WCD938X_MICB2_TEST_CTL_3, 0x80, 0x80);
 #endif
 
 	return 0;
@@ -480,12 +477,6 @@ static int wcd938x_parse_port_mapping(struct device *dev,
 
 	for (i = 0; i < map_length; i++) {
 		port_num = dt_array[NUM_SWRS_DT_PARAMS * i];
-
-		if (port_num >= MAX_PORT || ch_iter >= MAX_CH_PER_PORT) {
-			dev_err(dev, "%s: Invalid port or channel number\n", __func__);
-			goto err_pdata_fail;
-		}
-
 		slave_port_type = dt_array[NUM_SWRS_DT_PARAMS * i + 1];
 		ch_mask = dt_array[NUM_SWRS_DT_PARAMS * i + 2];
 		ch_rate = dt_array[NUM_SWRS_DT_PARAMS * i + 3];
@@ -4110,11 +4101,6 @@ static int wcd938x_soc_codec_probe(struct snd_soc_component *component)
 			return ret;
 		}
 	}
-/* register codec hardware */
-#ifdef CONFIG_MMHARDWARE_DETECTION
-	register_kobj_under_mmsysfs(MM_HW_CODEC,
-				    MM_HARDWARE_SYSFS_CODEC_FOLDER);
-#endif
 	return ret;
 
 err_hwdep:

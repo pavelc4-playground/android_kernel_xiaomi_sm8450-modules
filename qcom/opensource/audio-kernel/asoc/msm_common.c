@@ -413,8 +413,7 @@ int msm_common_snd_hw_params(struct snd_pcm_substream *substream,
 
 				intf_clk_cfg.clk_id = ret;
 				intf_clk_cfg.clk_freq_in_hz = rate * slot_width * slots;
-				intf_clk_cfg.clk_attri =
-					CLOCK_ATTRIBUTE_INVERT_COUPLE_NO;
+				intf_clk_cfg.clk_attri = CLOCK_ATTRIBUTE_INVERT_COUPLE_NO;
 				intf_clk_cfg.clk_root = 0;
 
 				if (pdata->is_audio_hw_vote_required[index]  &&
@@ -603,7 +602,7 @@ void msm_common_snd_shutdown(struct snd_pcm_substream *substream)
 	}
 }
 
-static void msm_audio_add_qos_request(void)
+static void msm_audio_add_qos_request()
 {
 	int num_req = 0;
 	int cpu = 0;
@@ -644,7 +643,7 @@ static void msm_audio_add_qos_request(void)
 	}
 }
 
-static void msm_audio_remove_qos_request(void)
+static void msm_audio_remove_qos_request()
 {
 	int cpu = 0;
 	int ret = 0;
@@ -841,7 +840,7 @@ int msm_channel_map_get(struct snd_kcontrol *kcontrol,
 			ch_cnt = tx_ch_cnt;
 		}
 		if (ch_cnt > 2) {
-			pr_err("%s: Incorrect channel count: %d\n", __func__, ch_cnt);
+			pr_err("%s: Incorrect channel count: %d\n", ch_cnt);
 			return -EINVAL;
 		}
 		len = sizeof(uint32_t) * (ch_cnt + 1);
@@ -890,7 +889,9 @@ int msm_channel_map_get(struct snd_kcontrol *kcontrol,
 		/* reset return value from the loop above */
 		ret = 0;
 		if (rx_ch_cnt == 0 && tx_ch_cnt == 0) {
-			pr_debug("%s: incorrect ch map for backend_id:%d, RX Channel Cnt:%d, TX Channel Cnt:%d\n",
+			pr_debug("%s: got incorrect channel map for backend_id:%d, ",
+				"RX Channel Count:%d,"
+				"TX Channel Count:%d\n",
 				__func__, backend_id, rx_ch_cnt, tx_ch_cnt);
 			return ret;
 		}

@@ -749,8 +749,7 @@ correct_plug_type:
 		 * begin to detect without sound card registered. delay
 		 * about 150ms to wait sound card registe.
 		 */
-		if ((mbhc->mbhc_cfg->swap_gnd_mic == NULL) &&
-		    (mbhc->mbhc_cfg->enable_usbc_analog))
+		if ((mbhc->mbhc_cfg->swap_gnd_mic == NULL) && (mbhc->mbhc_cfg->enable_usbc_analog))
 			msleep(200);
 		/*
 		 * Use ADC single mode to minimize the chance of missing out
@@ -917,10 +916,10 @@ report:
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_ADC_MODE, 0);
 	WCD_MBHC_REG_UPDATE_BITS(WCD_MBHC_ADC_EN, 0);
 
-#if defined(CONFIG_TARGET_PRODUCT_ZIYI) || defined(CONFIG_TARGET_PRODUCT_YUDI)
+#ifdef CONFIG_TARGET_PRODUCT_ZIYI
 	if (mbhc->hs_detect_work_stop) {
 		pr_debug("%s: stop requested: %d\n", __func__,
-			 mbhc->hs_detect_work_stop);
+				mbhc->hs_detect_work_stop);
 		wcd_micbias_disable(mbhc);
 		goto exit;
 	}

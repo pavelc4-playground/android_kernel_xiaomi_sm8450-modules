@@ -215,11 +215,11 @@ CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
 		-Werror\
 		-D__linux__
 
-ifneq (,$(filter $(TARGET_PRODUCT), dagda zeus))
+ifneq (,$(filter $(TARGET_PRODUCT), zeus))
 	CDEFINES += -DCONFIG_TARGET_PRODUCT_ZEUS
 endif
 
-ifneq (,$(filter $(TARGET_PRODUCT), taranis thor))
+ifneq (,$(filter $(TARGET_PRODUCT), thor))
 	CDEFINES += -DCONFIG_TARGET_PRODUCT_THOR
 endif
 
@@ -257,14 +257,6 @@ endif
 
 ifneq (,$(filter $(TARGET_PRODUCT), marble))
 	CDEFINES += -DCONFIG_TARGET_PRODUCT_MARBLE
-endif
-
-ifneq (,$(filter $(TARGET_PRODUCT), yudi))
-	CDEFINES += -DCONFIG_TARGET_PRODUCT_YUDI
-endif
-
-ifneq (,$(filter $(TARGET_PRODUCT), garnet))
-	CDEFINES += -DCONFIG_TARGET_PRODUCT_GARNET
 endif
 
 KBUILD_CPPFLAGS += $(CDEFINES)
@@ -324,3 +316,6 @@ machine_dlkm-y := $(MACHINE_OBJS)
 
 obj-$(CONFIG_SND_SOC_SDX) += machine_dlkm.o
 machine_dlkm-y := $(MACHINE_OBJS)
+
+# inject some build related information
+DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"
