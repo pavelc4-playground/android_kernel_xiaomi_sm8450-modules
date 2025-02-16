@@ -40,21 +40,26 @@ separated_techpacks = {
     "video-driver": "video",
 }
 
-# Parses the module revision from a techpack manifest
-def get_revision_from_manifest(techpack, tp_tag, path):
-    response = requests.get(f"https://git.codelinaro.org/clo/la/techpack/{techpack}/manifest/-/raw/release/{tp_tag}.xml")
-    if response.status_code != 200:
-        print("Failed to load", techpack, "manifest!")
-        return
-
-    root = ET.fromstring(response.content)
+# Parses the module revision from a vendor manifest
+def get_revision_from_manifest(tag, path, techpack=None):
+    if techpack is None:
+        root = manifest_root
+    else:
+        response = requests.get(f"https://git.codelinaro.org/clo/la/techpack/{techpack}/manifest/-/raw/release/{tag}.xml")
+        if response.status_code != 200:
+            print("Failed to load", techpack, "manifest!")
+            return
+        root = ET.fromstring(response.content)
 
     for project in root.findall('project'):
         repo_path = project.get('path')
         if repo_path is not None and repo_path.endswith(path):
             return project.get('revision')
 
-    print("Failed to obtain revision from", techpack, "techpack manifest!")
+    if techpack is None:
+        print("Failed to obtain revision from vendor manifest!")
+    else:
+        print("Failed to obtain revision from", techpack, "techpack manifest!")
 
 # Obtains the tag for the given techpack manifest from vendor manifest
 def get_techpack_tag(techpack):
@@ -63,21 +68,22 @@ def get_techpack_tag(techpack):
         for image in refs:
             project = image.get('project')
             if project == "techpack/" + techpack + "/manifest":
-                return(image.get('tag'))
+                return image.get('tag')
 
     print("Failed to obtain", techpack, "techpack tag from manifest!")
 
+# Returns (actual_revision, display_revision)
 def get_revision(path):
     if path in separated_techpacks.keys():
         techpack = separated_techpacks.get(path)
         tp_tag = get_techpack_tag(techpack)
         if tp_tag is not None:
             print("Techpack tag:", tp_tag)
-            return get_revision_from_manifest(techpack, tp_tag, path)
+            return (get_revision_from_manifest(tp_tag, path, techpack), tp_tag)
     else:
-        return tag
+        return (get_revision_from_manifest(tag, path), tag)
 
-# Here we go
+# HERE IT BEGINS
 response = requests.get(f"https://git.codelinaro.org/clo/la/la/vendor/manifest/-/raw/release/{tag}.xml")
 if response.status_code != 200:
     print("Tag does not exist!")
@@ -89,30 +95,35 @@ manifest_root = ET.fromstring(response.content)
 for path, url in modules.items():
     print("\nMerging", path)
 
-    revision = get_revision(path)
-    if revision is None:
+    revs = get_revision(path)
+    if revs is None:
         print("Failed to obtain revision, bailing!")
-        break
+        continue
+
+    rev, display_rev = revs
 
     print("URL:", url)
-    print("Revision:", revision)
+    print("Revision:", rev)
 
-    if revision == tag:
-        commit_msg = f"{path}: Merge tag \'{tag}\'"
-    else:
-        commit_msg = f"{path}: Merge {revision}\n\nFrom vendor tag: \'{tag}\'"
+    commit_msg = f"{path}: Merge tag \'{display_rev}\'"
+    if display_rev != tag:
+        commit_msg += f"\n\nFrom vendor tag: \'{tag}\'"
 
     try:
         subprocess.run([
             "git",
-            "subtree",
-            "pull",
-            "-P",
-            "qcom/opensource/" + path,
+            "fetch",
+            url,
+            rev
+        ], check=True)
+        subprocess.run([
+            "git",
+            "merge",
+            "FETCH_HEAD",
+            "-Xsubtree=qcom/opensource/" + path,
             "-m",
             commit_msg,
-            url,
-            revision
+            "--log=100"
         ], check=True)
     except subprocess.CalledProcessError as e:
         print("Failed to merge!")
