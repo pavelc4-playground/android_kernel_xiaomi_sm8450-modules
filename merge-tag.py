@@ -40,6 +40,12 @@ separated_techpacks = {
     "video-driver": "video",
 }
 
+# Input revision from user - fallback
+# for that facepalm moment when they forget to release a manifest xml
+def get_revision_from_user():
+    i = input("Enter custom tag or revision to proceed, or s to skip: ")
+    return None if i.casefold() == 's' else i
+
 # Parses the module revision from a vendor manifest
 def get_revision_from_manifest(tag, path, techpack=None):
     if techpack is None:
@@ -48,7 +54,7 @@ def get_revision_from_manifest(tag, path, techpack=None):
         response = requests.get(f"https://git.codelinaro.org/clo/la/techpack/{techpack}/manifest/-/raw/release/{tag}.xml")
         if response.status_code != 200:
             print("Failed to load", techpack, "manifest!")
-            return
+            return get_revision_from_user()
         root = ET.fromstring(response.content)
 
     for project in root.findall('project'):
@@ -60,6 +66,8 @@ def get_revision_from_manifest(tag, path, techpack=None):
         print("Failed to obtain revision from vendor manifest!")
     else:
         print("Failed to obtain revision from", techpack, "techpack manifest!")
+
+    return get_revision_from_user()
 
 # Obtains the tag for the given techpack manifest from vendor manifest
 def get_techpack_tag(techpack):
@@ -101,6 +109,9 @@ for path, url in modules.items():
         continue
 
     rev, display_rev = revs
+    if rev is None:
+        print("No revision obtained, skipping!")
+        continue
 
     print("URL:", url)
     print("Revision:", rev)
